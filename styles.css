@@ -1,0 +1,249 @@
+/* StudySync Custom Styles & Animations */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+    --card-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    --glass-border: rgba(226, 232, 240, 0.8);
+}
+
+.dark {
+    --card-gradient: linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 100%);
+    --glass-border: rgba(51, 65, 85, 0.6);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+}
+
+.dark .glass-panel {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+}
+
+/* Gradient text */
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Card hover animation */
+.note-card {
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.note-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px -10px rgba(99, 102, 241, 0.18);
+}
+
+.dark .note-card:hover {
+    box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* 3D Flashcard Flip Mechanics */
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 1rem;
+}
+
+.flip-card-back {
+    transform: rotateY(180deg);
+}
+
+/* Reading Mode Presets */
+.reader-theme-paper {
+    background-color: #fbfbf9 !important;
+    color: #1e293b !important;
+}
+
+.reader-theme-dark {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+.reader-theme-sepia {
+    background-color: #f5ede0 !important;
+    color: #433422 !important;
+}
+
+.reader-theme-sage {
+    background-color: #eef3eb !important;
+    color: #273625 !important;
+}
+
+/* Note Content Typography inside Reader */
+.note-body h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: inherit;
+    border-bottom: 2px solid rgba(150, 150, 150, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.note-body h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: inherit;
+}
+
+.note-body h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+    color: inherit;
+}
+
+.note-body p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+}
+
+.note-body ul, .note-body ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.7;
+}
+
+.note-body ul {
+    list-style-type: disc;
+}
+
+.note-body ol {
+    list-style-type: decimal;
+}
+
+.note-body pre {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.note-body blockquote {
+    border-left: 4px solid #6366f1;
+    padding-left: 1rem;
+    font-style: italic;
+    margin: 1rem 0;
+    opacity: 0.9;
+}
+
+.note-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.note-body th, .note-body td {
+    border: 1px solid rgba(150, 150, 150, 0.25);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+.note-body th {
+    background-color: rgba(99, 102, 241, 0.1);
+    font-weight: 600;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.7);
+}
+
+/* Pulse animation for streaks */
+@keyframes flamePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.12);
+    }
+}
+
+.streak-flame {
+    display: inline-block;
+    animation: flamePulse 1.8s infinite ease-in-out;
+}
+
+/* Print styling */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #noteReaderModal, #noteReaderModal * {
+        visibility: visible;
+    }
+    #noteReaderModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        background: white !important;
+        color: black !important;
+    }
+    .no-print {
+        display: none !important;
+    }
+}

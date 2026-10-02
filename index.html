@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySync | Modern Collaborative Notes Sharing Platform</title>
+    
+    <!-- Meta tags for SEO & OpenGraph -->
+    <meta name="description" content="StudySync is an online notes sharing and collaborative study platform. Share lecture summaries, cheat sheets, past papers, flashcards, and ace your exams together.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.45 9L12 4.34 20.55 9 12 13.66 3.45 9zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z'/></svg>">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- ========================================== -->
+    <!-- GLOBAL NAVBAR                              -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-slate-200/80 dark:border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('explore')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                            StudySync
+                        </span>
+                        <span class="hidden sm:inline-block ml-1.5 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                            v2.4
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Global Live Search (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md mx-4 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="globalSearchInput" 
+                        placeholder="Search courses, formulas, topics (e.g. CS 201, Green's Theorem)..." 
+                        class="w-full pl-10 pr-12 py-2 text-sm bg-slate-100/80 dark:bg-slate-800/80 border border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none transition-all placeholder:text-slate-400"
+                    />
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">⌘K</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs Links -->
+                <nav class="hidden lg:flex items-center gap-1 font-medium text-sm">
+                    <button onclick="switchTab('explore')" data-tab="explore" class="nav-btn px-3 py-2 rounded-lg text-indigo-600 dark:text-indigo-400 font-semibold transition">
+                        Explore
+                    </button>
+                    <button onclick="switchTab('library')" data-tab="library" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                        My Library
+                    </button>
+                    <button onclick="switchTab('studyHub')" data-tab="studyHub" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-1.5">
+                        <span>AI Study Hub</span>
+                        <span class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                    </button>
+                    <button onclick="switchTab('community')" data-tab="community" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                        Community
+                    </button>
+                </nav>
+
+                <!-- Actions: Streak, Theme Toggle, Upload CTA, User Profile -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    
+                    <!-- Study Streak Badge -->
+                    <div title="Current Study Streak: 7 Days" class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 text-xs font-bold">
+                        <span class="streak-flame">🔥</span>
+                        <span id="userStreakDays">7d</span>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <svg class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    </button>
+
+                    <!-- Upload Button CTA -->
+                    <button onclick="openUploadModal()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 active:scale-95 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>Share Notes</span>
+                    </button>
+
+                    <!-- User Profile Avatar & Points -->
+                    <div onclick="switchTab('library')" class="flex items-center gap-2 pl-1 cursor-pointer" title="View Profile">
+                        <img id="userAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" class="w-8 h-8 rounded-full ring-2 ring-indigo-500/30 object-cover" alt="Profile" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Sub-bar -->
+        <div class="lg:hidden flex items-center justify-around border-t border-slate-200 dark:border-slate-800 py-2 px-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+            <button onclick="switchTab('explore')" data-tab="explore" class="nav-btn text-xs font-semibold text-indigo-600 dark:text-indigo-400">Explore</button>
+            <button onclick="switchTab('library')" data-tab="library" class="nav-btn text-xs font-medium text-slate-600 dark:text-slate-400">My Library</button>
+            <button onclick="switchTab('studyHub')" data-tab="studyHub" class="nav-btn text-xs font-medium text-slate-600 dark:text-slate-400">AI Study Hub</button>
+            <button onclick="switchTab('community')" data-tab="community" class="nav-btn text-xs font-medium text-slate-600 dark:text-slate-400">Community</button>
+        </div>
+    </header>
+
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT SECTIONS                      -->
+    <!-- ========================================== -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- ====================================== -->
+        <!-- TAB 1: EXPLORE FEED SECTION            -->
+        <!-- ====================================== -->
+        <section id="exploreSection" class="space-y-8">
+            
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 text-white p-6 sm:p-10 shadow-2xl border border-indigo-500/20">
+                <div class="absolute -right-10 -bottom-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute right-40 -top-10 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="relative z-10 max-w-3xl space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-medium text-indigo-200">
+                        <span>✨</span> Over 15,400+ peer-reviewed academic notes & study aids
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                        Share Knowledge. <br>
+                        <span class="bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+                            Ace Exams. Study Together.
+                        </span>
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base max-w-2xl">
+                        Access top student notes, formula cheat sheets, past exam breakdowns, and interactive AI-powered flashcards from top universities worldwide.
+                    </p>
+
+                    <!-- Hero Quick Search -->
+                    <div class="pt-2 flex flex-col sm:flex-row gap-2 max-w-xl">
+                        <div class="relative flex-1">
+                            <input 
+                                type="text" 
+                                id="heroSearchInput" 
+                                placeholder="What subject are you studying today?" 
+                                class="w-full px-4 py-3 text-sm bg-white/10 backdrop-blur border border-white/20 rounded-xl placeholder:text-slate-400 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            />
+                        </div>
+                        <button onclick="document.getElementById('globalSearchInput').focus()" class="px-6 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 font-semibold text-sm shadow-lg shadow-indigo-500/30 transition">
+                            Explore Notes
+                        </button>
+                    </div>
+
+                    <!-- Platform Ticker Stats -->
+                    <div class="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-300">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span class="font-bold text-white">98,000+</span> Active Students
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                            <span class="font-bold text-white">450+</span> Universities
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                            <span class="font-bold text-white">4.9 / 5</span> Verified Quality
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Pills Bar -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white">Browse by Discipline</h2>
+                    <span id="resultsCountBadge" class="text-xs text-slate-500 font-medium">8 resources found</span>
+                </div>
+                
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                    <button class="category-chip active px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-indigo-600 text-white transition shadow-sm" data-category="All">
+                        All Fields
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Computer Science">
+                        💻 Computer Science
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Mathematics">
+                        📐 Mathematics
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Medical & Bio">
+                        🧬 Biology & Pre-Med
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Chemistry">
+                        🧪 Chemistry
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Physics">
+                        ⚡ Physics
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Business & Law">
+                        📈 Economics & Business
+                    </button>
+                    <button class="category-chip px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition" data-category="Humanities">
+                        🏛️ Humanities & History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Secondary Filters & Sorting Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-500">Resource:</span>
+                    <select id="resourceTypeSelect" class="bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none">
+                        <option value="All">All Formats</option>
+                        <option value="Comprehensive Notes">Comprehensive Notes</option>
+                        <option value="Cheat Sheet">Cheat Sheets</option>
+                        <option value="Formula Sheet">Formula Sheets</option>
+                        <option value="Exam Summary">Exam Summaries</option>
+                        <option value="Lecture Notes">Lecture Notes</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-500">Sort By:</span>
+                    <select id="sortBySelect" class="bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none">
+                        <option value="popular">🔥 Most Popular (Upvotes)</option>
+                        <option value="rating">⭐ Highest Rated</option>
+                        <option value="newest">🕒 Newest First</option>
+                        <option value="downloads">📥 Most Downloaded</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Notes Grid Container -->
+            <div id="notesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injected dynamically by app.js -->
+            </div>
+
+            <!-- Empty State for Notes -->
+            <div id="notesEmptyState" class="hidden text-center py-16 px-4 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center text-3xl">🔍</div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">No notes match your search</h3>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Try clearing filters or search for another keyword like "algorithms", "calculus", or "chemistry".</p>
+                <button onclick="document.getElementById('globalSearchInput').value=''; AppState.searchQuery=''; AppState.selectedCategory='All'; renderNotesGrid();" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold">
+                    Reset All Filters
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ====================================== -->
+        <!-- TAB 2: MY LIBRARY & PROFILE SECTION    -->
+        <!-- ====================================== -->
+        <section id="librarySection" class="hidden space-y-8">
+            
+            <!-- User Header Card -->
+            <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4 text-center md:text-left">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120" class="w-16 h-16 rounded-2xl ring-4 ring-indigo-500/20 object-cover" />
+                    <div>
+                        <div class="flex items-center justify-center md:justify-start gap-2">
+                            <h2 id="userProfileName" class="text-xl font-bold text-slate-900 dark:text-white">Alex Rivera</h2>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">Level 4 Scholar</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">Stanford University • Computer Science & Mathematics</p>
+                    </div>
+                </div>
+
+                <!-- Stats summary cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+                        <div id="libRepPoints" class="text-lg font-extrabold text-indigo-600 dark:text-indigo-400">480</div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase">Reputation</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+                        <div id="libNotesReadCount" class="text-lg font-extrabold text-purple-600 dark:text-purple-400">19</div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase">Notes Read</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+                        <div id="libCardsFlippedCount" class="text-lg font-extrabold text-pink-600 dark:text-pink-400">46</div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase">Cards Studied</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+                        <div id="libDownloadsCount" class="text-lg font-extrabold text-amber-600 dark:text-amber-400">12</div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase">Downloads</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library Tabs: Saved vs My Uploads -->
+            <div class="space-y-6">
+                <!-- Section 1: Saved Notes -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">📌</span>
+                            <h3 class="font-bold text-slate-900 dark:text-white">Saved Notes & Bookmarks</h3>
+                        </div>
+                        <span class="text-xs text-slate-500">Quick access anytime</span>
+                    </div>
+
+                    <div id="savedNotesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Injected by renderLibrary() -->
+                    </div>
+                </div>
+
+                <!-- Section 2: My Uploads -->
+                <div class="space-y-4 pt-6">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">📤</span>
+                            <h3 class="font-bold text-slate-900 dark:text-white">My Shared Notes</h3>
+                        </div>
+                        <button onclick="openUploadModal()" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold">
+                            + Upload New
+                        </button>
+                    </div>
+
+                    <div id="myUploadsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Injected by renderLibrary() -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ====================================== -->
+        <!-- TAB 3: AI STUDY HUB (FLASHCARDS & QUIZ)-->
+        <!-- ====================================== -->
+        <section id="studyHubSection" class="hidden space-y-8">
+            
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <span class="px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800 text-xs font-bold">
+                    🧠 Interactive Learning Engine
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+                    Master Key Concepts Faster
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500">
+                    Switch between 3D flashcard repetition and instant AI-generated multiple choice quizzes generated directly from student notes.
+                </p>
+            </div>
+
+            <!-- Subject / Deck Selector -->
+            <div class="max-w-md mx-auto flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Deck:</span>
+                <select id="deckSelect" class="flex-1 bg-slate-50 dark:bg-slate-700 text-xs font-semibold p-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Tabs: Flashcards Deck vs Quiz Mode -->
+            <div class="max-w-2xl mx-auto">
+                <div class="flex rounded-2xl bg-slate-200 dark:bg-slate-800 p-1 mb-6 text-xs font-bold">
+                    <button id="flashcardTabBtn" onclick="document.getElementById('flashcardsModeContainer').classList.remove('hidden'); document.getElementById('quizModeContainer').classList.add('hidden'); this.classList.add('bg-white', 'dark:bg-slate-700', 'text-indigo-600', 'shadow'); document.getElementById('quizTabBtn').classList.remove('bg-white', 'dark:bg-slate-700', 'text-indigo-600', 'shadow');" class="flex-1 py-2.5 rounded-xl bg-white dark:bg-slate-700 text-indigo-600 shadow transition text-center">
+                        🃏 3D Flashcards Deck
+                    </button>
+                    <button id="quizTabBtn" onclick="document.getElementById('flashcardsModeContainer').classList.add('hidden'); document.getElementById('quizModeContainer').classList.remove('hidden'); this.classList.add('bg-white', 'dark:bg-slate-700', 'text-indigo-600', 'shadow'); document.getElementById('flashcardTabBtn').classList.remove('bg-white', 'dark:bg-slate-700', 'text-indigo-600', 'shadow');" class="flex-1 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 transition text-center">
+                        📝 Interactive Quiz Mode
+                    </button>
+                </div>
+
+                <!-- 1. Flashcards Mode Container -->
+                <div id="flashcardsModeContainer" class="space-y-6">
+                    
+                    <!-- Progress Bar & Counter -->
+                    <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+                        <span id="flashcardCounter">Card 1 of 4</span>
+                        <span id="masteredCounter" class="text-emerald-600 dark:text-emerald-400">0 Mastered</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="flashcardProgress" class="bg-gradient-to-r from-indigo-500 to-emerald-500 h-full w-[10%] transition-all duration-300"></div>
+                    </div>
+
+                    <!-- 3D Flashcard Flip Card -->
+                    <div class="perspective-1000 w-full h-80 sm:h-96 cursor-pointer select-none">
+                        <div id="activeFlashcard" class="flip-card flip-card-inner w-full h-full relative">
+                            
+                            <!-- Front Side (Question) -->
+                            <div class="flip-card-front p-8 flex flex-col justify-between bg-white dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-900/60 rounded-3xl shadow-xl">
+                                <div class="flex items-center justify-between">
+                                    <span id="flashcardSubjectBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        Computer Science
+                                    </span>
+                                    <span class="text-[11px] font-semibold text-slate-400">Click to reveal answer 🔄</span>
+                                </div>
+                                <div class="text-center my-auto px-4">
+                                    <span class="text-xs uppercase tracking-widest text-slate-400 font-bold block mb-2">Question</span>
+                                    <p id="flashcardQuestion" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-relaxed">
+                                        What is the average time complexity for searching an element in a Hash Table?
+                                    </p>
+                                </div>
+                                <div class="text-center text-xs text-indigo-500 font-semibold">
+                                    Tap or Click to Flip ↷
+                                </div>
+                            </div>
+
+                            <!-- Back Side (Answer) -->
+                            <div class="flip-card-back p-8 flex flex-col justify-between bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white rounded-3xl shadow-xl border border-indigo-400/30">
+                                <div class="flex items-center justify-between text-indigo-200 text-xs font-bold">
+                                    <span>Answer & Explanation</span>
+                                    <span>Click to flip back 🔄</span>
+                                </div>
+                                <div class="text-center my-auto px-4">
+                                    <p id="flashcardAnswer" class="text-base sm:text-lg font-medium leading-relaxed">
+                                        O(1) average time complexity, assuming a uniform hash distribution with low collision rate.
+                                    </p>
+                                </div>
+                                <div class="text-center text-xs text-indigo-200">
+                                    Rate your recall below to track progress
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Controls -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <button onclick="StudyEngine.shuffleDeck()" title="Shuffle Deck" class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition">
+                            <span>🔀</span> Shuffle
+                        </button>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="StudyEngine.markReview()" class="px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-semibold hover:bg-rose-100 transition">
+                                Still Learning ❌
+                            </button>
+                            <button onclick="StudyEngine.markMastered()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 transition">
+                                Got It! Mastered ✓
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="StudyEngine.prevCard()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                ←
+                            </button>
+                            <button onclick="StudyEngine.nextCard()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
+                                →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Quiz Mode Container -->
+                <div id="quizModeContainer" class="hidden p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg">
+                    <div id="quizContainer">
+                        <!-- Injected by StudyEngine.renderQuizQuestion() -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ====================================== -->
+        <!-- TAB 4: COMMUNITY & Q&A FORUM           -->
+        <!-- ====================================== -->
+        <section id="communitySection" class="hidden space-y-6">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Community Notes Exchange & Study Q&A</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Ask for missing notes, form study groups, or answer questions to earn reputation points.</p>
+                </div>
+            </div>
+
+            <!-- Post Question Input Card -->
+            <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Request Notes or Ask a Question</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input 
+                        type="text" 
+                        id="newThreadQuestionInput" 
+                        placeholder="e.g., Does anyone have the final exam review sheet for CHEM 102?" 
+                        class="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                    />
+                    <button onclick="postCommunityQuestion()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm transition">
+                        Post to Community
+                    </button>
+                </div>
+            </div>
+
+            <!-- Community Threads List -->
+            <div id="communityThreadsContainer" class="space-y-4">
+                <!-- Injected dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- ========================================== -->
+    <!-- INTERACTIVE NOTE READER MODAL              -->
+    <!-- ========================================== -->
+    <div id="noteReaderModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 md:p-6">
+        <div class="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            
+            <!-- Reader Modal Header -->
+            <div class="no-print p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur">
+                <div class="flex items-center gap-3">
+                    <span id="readerSubjectBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                        CS 201 Computer Science
+                    </span>
+                    <span id="readerDate" class="hidden sm:inline-block text-xs text-slate-400">
+                        Uploaded on 2026-09-15
+                    </span>
+                </div>
+
+                <!-- Reader Controls (Font size, Theme, Print, Close) -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    
+                    <!-- Font Sizing -->
+                    <div class="hidden sm:flex items-center border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden text-xs">
+                        <button onclick="changeReaderFontSize(-2)" title="Smaller Text" class="px-2 py-1.5 hover:bg-slate-200 dark:hover:bg-slate-700">A-</button>
+                        <button onclick="resetReaderFontSize()" title="Reset Size" class="px-2 py-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold border-x border-slate-200 dark:border-slate-700">100%</button>
+                        <button onclick="changeReaderFontSize(2)" title="Larger Text" class="px-2 py-1.5 hover:bg-slate-200 dark:hover:bg-slate-700">A+</button>
+                    </div>
+
+                    <!-- Reading Background Themes -->
+                    <div class="hidden md:flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-xl">
+                        <button onclick="setReaderTheme('paper')" title="Clean Paper" class="w-5 h-5 rounded-full bg-[#fbfbf9] border border-slate-300"></button>
+                        <button onclick="setReaderTheme('sepia')" title="Warm Sepia" class="w-5 h-5 rounded-full bg-[#f5ede0] border border-amber-300"></button>
+                        <button onclick="setReaderTheme('sage')" title="Eye-Care Sage" class="w-5 h-5 rounded-full bg-[#eef3eb] border border-emerald-300"></button>
+                        <button onclick="setReaderTheme('dark')" title="Night Dark" class="w-5 h-5 rounded-full bg-[#0f172a] border border-slate-600"></button>
+                    </div>
+
+                    <!-- Print Button -->
+                    <button onclick="window.print()" title="Print Notes" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    </button>
+
+                    <!-- Close Button -->
+                    <button onclick="closeNoteReader()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-slate-500 hover:text-rose-600 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- Scrollable Reader Paper Area -->
+            <div id="readerPaperContainer" class="flex-1 overflow-y-auto p-6 sm:p-10 reader-theme-paper transition-all">
+                
+                <!-- Note Title & Author Header -->
+                <div class="border-b border-slate-200/80 dark:border-slate-700/80 pb-6 mb-6">
+                    <h1 id="readerNoteTitle" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4">
+                        Data Structures & Algorithms Mastery Notes
+                    </h1>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <img id="readerAuthorAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60" class="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                                <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span id="readerAuthorName">Alex Chen</span>
+                                    <span class="text-blue-500 text-xs">✓ Verified Author</span>
+                                </div>
+                                <div id="readerAuthorUni" class="text-[11px] text-slate-500">Stanford University</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 text-xs">
+                            <span id="readerRating" class="font-bold text-amber-500">★ 4.9 (142 reviews)</span>
+                            <span class="text-slate-300">•</span>
+                            <span id="readerDownloads" class="text-slate-500">1,480 downloads</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Body Content -->
+                <div id="readerContentBody" class="prose max-w-none text-slate-800 dark:text-slate-200 leading-relaxed mb-10">
+                    <!-- Parsed Markdown or text injected here -->
+                </div>
+
+                <!-- Study Companion Callout -->
+                <div class="no-print p-6 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex flex-col sm:flex-row items-center justify-between gap-4 my-8">
+                    <div>
+                        <h4 class="font-bold text-indigo-950 dark:text-indigo-200 text-sm">Want to test your mastery of these notes?</h4>
+                        <p class="text-xs text-indigo-700 dark:text-indigo-300">Launch the interactive 3D flashcards and multiple-choice quiz designed for this topic!</p>
+                    </div>
+                    <button id="readerLaunchStudyBtn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs whitespace-nowrap shadow-md transition">
+                        ⚡ Launch Study Tools
+                    </button>
+                </div>
+
+                <!-- Note Comments & Academic Q&A -->
+                <div class="no-print border-t border-slate-200 dark:border-slate-800 pt-8 space-y-4">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+                        <span>💬 Discussion & Study Questions</span>
+                    </h3>
+
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="readerCommentInput" 
+                            placeholder="Add a comment, tip, or ask for clarification..." 
+                            class="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                        />
+                        <button onclick="postReaderComment()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition">
+                            Post
+                        </button>
+                    </div>
+
+                    <div id="readerCommentsList" class="space-y-3 pt-2">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- UPLOAD NOTES MODAL                         -->
+    <!-- ========================================== -->
+    <div id="uploadNoteModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+        <div class="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>📤</span> Share Academic Notes
+                    </h3>
+                    <p class="text-xs text-slate-500">Help peers learn while earning reputation and community contributor badges.</p>
+                </div>
+                <button onclick="closeUploadModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Upload Form -->
+            <form id="uploadNoteForm" onsubmit="handleUploadFormSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Document Title *</label>
+                    <input 
+                        type="text" 
+                        id="uploadTitle" 
+                        required 
+                        placeholder="e.g. CS 161: Graph Algorithms & Dynamic Programming Guide" 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Subject Field *</label>
+                        <select id="uploadSubject" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Biology">Biology & Pre-Med</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Economics">Economics & Business</option>
+                            <option value="History">Humanities & History</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Resource Type</label>
+                        <select id="uploadResourceType" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+                            <option value="Comprehensive Notes">Comprehensive Notes</option>
+                            <option value="Cheat Sheet">Cheat Sheet</option>
+                            <option value="Formula Sheet">Formula Sheet</option>
+                            <option value="Exam Summary">Exam Summary</option>
+                            <option value="Lecture Notes">Lecture Notes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Course Code</label>
+                        <input 
+                            type="text" 
+                            id="uploadCourseCode" 
+                            placeholder="e.g. CS 106B, MATH 51" 
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">University / College</label>
+                        <input 
+                            type="text" 
+                            id="uploadUniversity" 
+                            placeholder="e.g. Stanford University" 
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tags (comma separated)</label>
+                    <input 
+                        type="text" 
+                        id="uploadTags" 
+                        placeholder="algorithms, dynamic-programming, python, midterm" 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Short Summary / Description *</label>
+                    <textarea 
+                        id="uploadDescription" 
+                        rows="2" 
+                        required 
+                        placeholder="Briefly describe what key topics or exam sections are covered in these notes..." 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                    ></textarea>
+                </div>
+
+                <!-- Drag & Drop File Simulator -->
+                <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 rounded-2xl p-4 text-center cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/40">
+                    <div class="text-2xl mb-1">📄</div>
+                    <div class="text-xs font-semibold text-slate-700 dark:text-slate-300">Drag and drop file here or paste formatted markdown below</div>
+                    <div class="text-[10px] text-slate-400">Supports PDF, DOCX, TXT or Markdown notes up to 25MB</div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Note Content (Markdown supported)</label>
+                    <textarea 
+                        id="uploadContent" 
+                        rows="5" 
+                        placeholder="# Course Overview&#10;&#10;## Key Concept 1&#10;Write or paste your lecture summary and equations here..." 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                    ></textarea>
+                </div>
+
+                <!-- Terms acknowledgment -->
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="termsCheck" required class="rounded text-indigo-600 focus:ring-indigo-500" />
+                    <label for="termsCheck" class="text-[11px] text-slate-500">
+                        I certify that these study notes are my original work or free open educational resources.
+                    </label>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-md shadow-indigo-500/25 transition">
+                        Publish Notes (+50 Rep)
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- FOOTER                                     -->
+    <!-- ========================================== -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950/60 backdrop-blur py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-900 dark:text-white">StudySync</span>
+                <span>• The Collaborative Academic Knowledge Hub</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="#" onclick="switchTab('explore'); return false;" class="hover:text-indigo-600 transition">Explore Feed</a>
+                <a href="#" onclick="switchTab('studyHub'); return false;" class="hover:text-indigo-600 transition">AI Flashcards & Quiz</a>
+                <a href="#" onclick="switchTab('community'); return false;" class="hover:text-indigo-600 transition">Community Forum</a>
+                <button onclick="StorageManager.resetAll(); location.reload();" class="text-rose-500 hover:underline">Reset Demo Data</button>
+            </div>
+            <div>
+                <span>© 2026 StudySync Platform. All study materials student-curated.</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/flashcards.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
