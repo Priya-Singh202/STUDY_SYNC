@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudySync – Complete B.Tech Engineering Hub</title>
+  <meta name="description" content="All-in-one B.Tech academic platform: verified engineering notes, PYQs, mock tests with explanations, and study focus timer.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.45 9L12 4.34 20.55 9 12 13.66 3.45 9zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z'/></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer"></div>
+
+  <!-- ============================================================ -->
+  <!-- 1. TOP NAVBAR                                                -->
+  <!-- ============================================================ -->
+  <header id="navbar">
+    <div class="nav-container">
+      <div class="brand" onclick="showHome()" style="cursor: pointer;">
+        <div class="brand-icon">📚</div>
+        <div>
+          <span>StudySync</span>
+          <span style="display:block; font-size: 0.72rem; color: var(--muted); font-weight: 500;">B.Tech Engineering Hub</span>
+        </div>
+      </div>
+
+      <!-- Guest Navigation (When not signed in) -->
+      <div class="nav-links" id="guestNav">
+        <button class="nav-link" onclick="showHome()">Home</button>
+        <button class="nav-link" onclick="showAuth('login')">Sign In</button>
+        <button class="btn btn-primary btn-sm" onclick="showAuth('register')">Get Started</button>
+      </div>
+
+      <!-- User Navigation (When signed in) -->
+      <div class="nav-links hidden" id="userNav">
+        <button class="nav-link" onclick="showDashboard('notes')">Dashboard</button>
+        <button class="nav-link" onclick="showDashboard('myuploads')">📂 My Uploads</button>
+        <button class="nav-link hidden" id="adminNavLink" onclick="showDashboard('admin')">👑 Admin Panel</button>
+        
+        <div class="nav-user">
+          <div class="avatar" id="navAvatar">PS</div>
+          <span id="navUserName" style="font-weight: 600; font-size: 0.9rem;">Priya Singh</span>
+          <span class="admin-pill hidden" id="adminNavPill">ADMIN</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="logout()" title="Sign out of account">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- 2. QUICK ACCESS RIBBON (REFLECTED PROMINENTLY AT TOP)         -->
+  <!-- ============================================================ -->
+  <div id="quickRibbon">
+    <div class="ribbon-inner">
+      <span class="ribbon-label">⚡ Quick Tools:</span>
+      <button class="ribbon-btn" onclick="ribbonNav('notes')">📄 Notes Hub</button>
+      <button class="ribbon-btn" onclick="ribbonNav('pyqs')">📝 University PYQs</button>
+      <button class="ribbon-btn" onclick="ribbonNav('quiz')">🎯 Mock Tests</button>
+      <button class="ribbon-btn" onclick="ribbonNav('timer')">⏱ Study Timer</button>
+      <button class="ribbon-btn" onclick="ribbonNav('upload')">📤 Upload Notes</button>
+      <button class="ribbon-btn" onclick="ribbonNav('myuploads')">📂 My Uploads</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 3. HERO SECTION (Clean White Theme, No Gradients)            -->
+  <!-- ============================================================ -->
+  <section id="heroSection">
+    <h1 class="hero-headline">The Smart Study Hub for <span>B.Tech Engineers</span></h1>
+    <p class="hero-sub">
+      Access university syllabus notes, thermodynamics, data structures, past exam papers, timed mock tests, and Pomodoro study sessions.
+    </p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="ribbonNav('notes')">📄 Explore Notes Hub</button>
+      <button class="btn btn-secondary" onclick="ribbonNav('quiz')">🎯 Start Mock Test</button>
+      <button class="btn btn-secondary" onclick="showAuth('login')">🔑 Student Login</button>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. QUICK STATS                                               -->
+  <!-- ============================================================ -->
+  <section id="statsSection">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">500+</div>
+        <div class="stat-lbl">Verified Engineering Notes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">10+</div>
+        <div class="stat-lbl">Years of PYQ Papers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100%</div>
+        <div class="stat-lbl">Free Open Access</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">24/7</div>
+        <div class="stat-lbl">Pomodoro Study Focus</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 5. AUTHENTICATION SECTION (No prefilled Aarav credentials)    -->
+  <!-- ============================================================ -->
+  <section id="authSection" class="hidden">
+    <div class="auth-card">
+      <div class="auth-logo">StudySync Access</div>
+      
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">New Registration</button>
+      </div>
+
+      <!-- Sign In Form (Empty inputs, secure credentials) -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" class="form-control" id="loginEmail" placeholder="e.g. your.email@college.edu" autocomplete="email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" class="form-control" id="loginPassword" placeholder="Enter your account password" autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full mt-2">Sign In to StudySync</button>
+
+        <div class="card" style="margin-top: 1.25rem; padding: 0.85rem; background: var(--bg); font-size: 0.82rem; border-color: var(--border);">
+          <strong>🔑 Access Information:</strong>
+          <ul style="margin: 0.4rem 0 0 1.1rem; color: var(--muted); line-height: 1.5;">
+            <li><strong>Students:</strong> Click "New Registration" to create your free account.</li>
+            <li><strong>Main Admin:</strong> Log in with <code>admin@studysync.edu</code> &amp; <code>StudySync@Admin2026</code>.</li>
+          </ul>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label for="regName">Full Name *</label>
+          <input type="text" class="form-control" id="regName" placeholder="e.g. Rahul Sharma" required>
+        </div>
+
+        <div class="form-group">
+          <label for="regEmail">College / Personal Email *</label>
+          <input type="email" class="form-control" id="regEmail" placeholder="e.g. rahul@btech.edu" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="regBranch">Branch *</label>
+            <select class="form-control" id="regBranch" required>
+              <option value="">Select Branch</option>
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="ME">Mechanical (ME)</option>
+              <option value="ECE">Electronics (ECE)</option>
+              <option value="CE">Civil (CE)</option>
+              <option value="Common">1st Year Common</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="regYear">Academic Year *</label>
+            <select class="form-control" id="regYear" required>
+              <option value="">Select Year</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword">Create Password (min. 6 chars) *</label>
+          <input type="password" class="form-control" id="regPassword" placeholder="••••••••" required>
+        </div>
+
+        <div class="form-group">
+          <label for="regConfirm">Confirm Password *</label>
+          <input type="password" class="form-control" id="regConfirm" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full mt-2">Complete Free Registration</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 6. DASHBOARD & STUDY MODULES                                 -->
+  <!-- ============================================================ -->
+  <main id="dashSection" class="hidden">
+    <!-- Header with Dynamic Welcome -->
+    <div class="dash-header">
+      <div class="dash-welcome">
+        <h2 id="dashGreeting">Welcome to StudySync</h2>
+        <p id="dashSubline">Manage your study notes, mock tests, and revision sessions.</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" data-tab="notes" onclick="switchDashTab('notes')">📄 Notes Hub</button>
+      <button class="dash-tab" data-tab="pyqs" onclick="switchDashTab('pyqs')">📝 University PYQs</button>
+      <button class="dash-tab" data-tab="quiz" onclick="switchDashTab('quiz')">🎯 Mock Tests</button>
+      <button class="dash-tab" data-tab="timer" onclick="switchDashTab('timer')">⏱ Study Timer</button>
+      <button class="dash-tab" data-tab="upload" onclick="switchDashTab('upload')">📤 Upload Notes</button>
+      <button class="dash-tab" data-tab="myuploads" onclick="switchDashTab('myuploads')">📂 My Uploads</button>
+      <button class="dash-tab hidden" id="adminDashTab" data-tab="admin" onclick="switchDashTab('admin')">👑 Admin Panel</button>
+    </div>
+
+    <!-- Sub-Panels -->
+    <div class="dash-panel" data-panel="notes" id="notesPanel"></div>
+    <div class="dash-panel hidden" data-panel="pyqs" id="pyqsPanel"></div>
+    <div class="dash-panel hidden" data-panel="quiz" id="quizPanel"></div>
+    <div class="dash-panel hidden" data-panel="timer" id="timerPanel"></div>
+    <div class="dash-panel hidden" data-panel="upload" id="uploadPanel"></div>
+    <div class="dash-panel hidden" data-panel="myuploads" id="myuploadsPanel"></div>
+    <div class="dash-panel hidden" data-panel="admin" id="adminPanel"></div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>
