@@ -1378,8 +1378,35 @@ function adminRemoveUser(email) {
   renderAdminPanel();
 }
 
+/* --- Dark Mode Theme Management --- */
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-theme');
+  localStorage.setItem('studysync_theme', isDark ? 'dark' : 'light');
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const btn = $('themeToggleBtn');
+  if (btn) {
+    const isDark = document.body.classList.contains('dark-theme');
+    btn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+    btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+  }
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('studysync_theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+  }
+  updateThemeIcon();
+}
+
 /* --- Initialization --- */
 function initializeApp() {
+  // Initialize Theme preference (Light or Dark)
+  initTheme();
+
   // Restore logged-in session if present
   try {
     const savedUser = localStorage.getItem(LS_USER);
